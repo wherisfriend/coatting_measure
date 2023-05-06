@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 #-------------------------------------
 # @Author: CSU_赵阳
 # @Date: 2023-04-19 21:11:19 
@@ -5,6 +6,7 @@
 # @Last Modified time: 2023-04-19 21:11:19 
 # @Describe: 覆层厚度测量
 # ----------------
+
 import time
 import os
 from PIL import Image,ImageDraw,ImageFont
@@ -79,7 +81,8 @@ class Test:
 
     # 偏圆度识别
     def roungness_measure(self):
-        threshold = self.ui.threshold.text()
+        # threshold = self.ui.threshold.text()
+        threshold = int(self.ui.threshold.text())
         if self.image_path == '':
             # 错误对话框
             QMessageBox.critical(self.ui, '输入错误','请先选择图片', QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
@@ -111,6 +114,7 @@ class Test:
 
         # 自定义灰度界限，大于这个值为白色，小于这个值为黑色。 125时生成带覆层轮廓的的
         threshold = int(self.ui.threshold.text())
+        # threshold =114
         table = []
         for i in range(256):
             if i < threshold:
@@ -240,6 +244,12 @@ class Test:
         
         File1.close()
 
+        # 是否有360个点
+        if len(N_table) != 360 or len(W_table) != 360:
+            QMessageBox.critical(self.ui, '内外轮廓不连贯','请调整二值化阈值', QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+
+
+
         # 距离内轮廓最近的外轮廓点
         W_table_Res = []
         # 距离最薄的覆层
@@ -358,13 +368,13 @@ class Test:
 
             
         # 设置图片名称
-        plt.title("360°覆层厚度波动图")
+        plt.title("360°覆层厚度波动图_px")
         # 设置x轴标签名
         plt.xlabel("角度（°） ")
         # 设置y轴标签名
         plt.ylabel("覆层厚度（px）")
         # 显示
-        plt.savefig(fname=str(curdir + '/output/'+ img_name + "_360度覆层厚度波动图.png"), dpi=300)
+        plt.savefig(fname=str(curdir + '/output/'+ img_name + "_360度覆层厚度波动图_px.png"), dpi=300)
         plt.show()
 
 
@@ -394,7 +404,56 @@ class Test:
         Real_max = LongLine * MaxL / MAX_Long
 
         # 画直线
-        # imgWC4 = cv2.line(img2,(tmp_min_L, tmp_min_L_row), (tmp_max_R, tmp_max_R_row), (255,155,0),3)
+        imgWC4 = cv2.line(img2,(tmp_min_L, tmp_min_L_row), (tmp_max_R, tmp_max_R_row), (255,155,0),3)
+
+        ####################################输出毫米单位的################################
+        filename2 = str(curdir + '/output/'+ img_name + "_360度覆层厚度_优化_mm.txt")
+
+        File3=open(filename2,mode='w')
+
+        for item in Fu_table_Res:
+            File3.writelines(str(item*LongLine/MAX_Long)+'\n')
+        #################################输出毫米单位的柱状图################################
+        # # 准备数据
+        x_data = [u"{}".format(i) for i in range(0, var)]
+        y_data2 = [u"{}".format(i*LongLine/MAX_Long) for i in Fu_table_Res]
+
+        # print(len(x_data),len(y_data))
+
+        plt.figure()
+        # # 正确显示中文和负号
+        plt.rcParams["font.sans-serif"] = ["SimHei"]
+        plt.rcParams["axes.unicode_minus"] = False
+
+        
+
+        # # 刻度间距
+        plt.gca().xaxis.set_major_locator(MultipleLocator(20))
+        plt.xlim(0,var)
+        plt.xticks(rotation=30)
+
+        # # plt.gca().yaxis.set_major_locator(MultipleLocator(2))
+        # # plt.ylim(0,36)
+        # # plt.yticks(rotation=30)
+
+        # # 折线图
+        # # plt.plot(x_data, float(y_data))
+
+        # # 画图，plt.bar()可以画柱状图
+        for i in range(len(x_data)):
+    	    plt.bar(x_data[i], float(y_data2[i]))
+
+            
+        # 设置图片名称
+        plt.title("360°覆层厚度波动图_mm")
+        # 设置x轴标签名
+        plt.xlabel("角度（°） ")
+        # 设置y轴标签名
+        plt.ylabel("覆层厚度（mm）")
+        # 显示
+        plt.savefig(fname=str(curdir + '/output/'+ img_name + "_360度覆层厚度波动图_mm.png"), dpi=300)
+        plt.show()
+
 
         ####################################输出文本################################
 

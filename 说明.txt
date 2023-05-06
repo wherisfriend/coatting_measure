@@ -1,0 +1,7 @@
+
+-i https://pypi.tuna.tsinghua.edu.cn/simple some-package
+
+打包依赖
+pip download -r requirement.txt -d packages -i https://pypi.tuna.tsinghua.edu.cn/simple some-package
+
+# 第一次使用软件，请按下配置
